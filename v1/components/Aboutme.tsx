@@ -23,12 +23,10 @@ export default function AboutMe() {
            className="text-gray-300 text-lg md:text-xl leading-relaxed max-w-2xl mx-auto"
         >
           <p className="mb-6">
-            I'm a passionate developer with a keen eye for design and a love for building immersive web experiences. 
-            My journey bridges the gap between creative visual storytelling and robust engineering.
+            I once built an entire app at 3 AM because I couldn't sleep. The app? A random excuse generator for when you're late to meetings. The irony? It worked so well I used it on myself.
           </p>
           <p>
-            When I'm not coding, I'm exploring new technologies, refining my design craft, 
-            or thinking about the next big idea that can push the boundaries of the web.
+            I'm the kind of person who sees a bug at 2 AM and thinks "just five more minutes" — then suddenly it's sunrise and I've refactored the entire codebase. Coffee is my fuel, console.log is my therapist, and I genuinely believe dark mode is a personality trait.
           </p>
         </motion.div>
       </div>

@@ -1,7 +1,7 @@
 'use client';
 
 import { motion } from "framer-motion";
-import { Mail, Linkedin, Github, Twitter } from "lucide-react";
+import { Mail, Linkedin, Github } from "lucide-react";
 
 export default function ContactMe() {
   return (
@@ -57,9 +57,8 @@ export default function ContactMe() {
             viewport={{ once: true }}
             className="flex gap-8 justify-center items-center"
         >
-          <SocialLink href="#" icon={<Github size={24} />} label="GitHub" />
-          <SocialLink href="#" icon={<Linkedin size={24} />} label="LinkedIn" />
-          <SocialLink href="#" icon={<Twitter size={24} />} label="Twitter" />
+          <SocialLink href="https://github.com/devansh7439" icon={<Github size={24} />} label="GitHub" />
+          <SocialLink href="https://www.linkedin.com/in/devansh-bagaria-167921300/" icon={<Linkedin size={24} />} label="LinkedIn" />
         </motion.div>
       </div>
     </section>

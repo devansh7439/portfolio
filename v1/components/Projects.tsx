@@ -39,48 +39,35 @@ export default function Projects() {
           Projects
         </motion.h2>
         
-        <div className="grid grid-cols-1 md:grid-cols-4 auto-rows-[220px] gap-6">
-          {projects.map((project, index) => {
-            const isFeatured = project.featured;
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto">
+          {projects.map((project, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: index * 0.1 }}
+              viewport={{ once: true }}
+              className="group relative rounded-xl overflow-hidden border border-white/10 bg-white/5 backdrop-blur-md hover:border-white/20 transition-all duration-300 aspect-[4/3]"
+            >
+              {/* Background */}
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 to-blue-900/20 group-hover:scale-105 transition-transform duration-500" />
+              
+              {/* Content */}
+              <div className="relative h-full p-5 flex flex-col justify-end">
+                <span className="text-[10px] text-gray-400 uppercase tracking-wider mb-1">
+                  {project.category}
+                </span>
 
-            return (
-              <motion.div
-                key={index}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: index * 0.1 }}
-                viewport={{ once: true }}
-                className={`
-                  group relative rounded-2xl overflow-hidden
-                  border border-white/10 bg-white/5 backdrop-blur-md
-                  hover:border-white/20 transition-all
-                  ${isFeatured ? 'md:col-span-2 md:row-span-2' : 'md:col-span-2'}
-                `}
-              >
-                {/* Background */}
-                <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 to-blue-900/20 group-hover:scale-105 transition-transform duration-500" />
-               
-                {/* Content */}
-                <div className="relative h-full p-6 flex flex-col justify-end">
-                  <span className="text-xs text-gray-400 uppercase tracking-wider mb-2">
-                    {project.category}
-                  </span>
+                <h3 className="text-white font-bold mb-1 text-lg md:text-xl">
+                  {project.title}
+                </h3>
 
-                  <h3 className={`text-white font-bold mb-2 ${isFeatured ? 'text-3xl' : 'text-xl'}`}>
-                    {project.title}
-                  </h3>
-
-                  <p className={`
-                    text-gray-300 text-sm
-                    ${isFeatured ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}
-                    transition-opacity duration-300
-                  `}>
-                      {project.description}
-                  </p>
-               </div>
+                <p className="text-gray-300 text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                  {project.description}
+                </p>
+              </div>
             </motion.div>
-            );
-          })}
+          ))}
         </div>
       </div>
     </section>

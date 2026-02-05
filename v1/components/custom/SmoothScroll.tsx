@@ -26,6 +26,9 @@ export function SmoothScroll({
     });
 
     lenisRef.current = lenis;
+    
+    // Expose Lenis instance on window for other components
+    (window as any).lenis = lenis;
 
     // Integrate Lenis with GSAP ScrollTrigger
     lenis.on("scroll", ScrollTrigger.update);
@@ -40,6 +43,7 @@ export function SmoothScroll({
 
     return () => {
       lenis.destroy();
+      (window as any).lenis = null;
     };
   }, []);
 
