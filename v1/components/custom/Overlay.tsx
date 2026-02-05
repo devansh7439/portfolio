@@ -1,135 +1,91 @@
 "use client";
 
-import { useRef } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, MotionValue, useTransform } from "framer-motion";
 
-interface TextSection {
-  text: string;
-  subtext?: string;
-  scrollStart: number;
-  scrollEnd: number;
-  horizontalPosition?: "left" | "center" | "right";
-  verticalPosition?: "top" | "center" | "bottom";
+interface SectionProps {
+  children: React.ReactNode;
+  opacity: MotionValue<number>;
+  y: MotionValue<number>;
+  className?: string;
 }
 
-const textSections: TextSection[] = [
-  {
-    text: "Devansh Bagaria",
-    subtext: "Creative Developer",
-    scrollStart: 0,
-    scrollEnd: 0.2,
-    horizontalPosition: "center",
-    verticalPosition: "center",
-  },
-  {
-    text: "I build digital experiences",
-    subtext: "that leave lasting impressions",
-    scrollStart: 0.25,
-    scrollEnd: 0.45,
-    horizontalPosition: "left",
-    verticalPosition: "center",
-  },
-  {
-    text: "Bridging design and engineering",
-    subtext: "with precision and creativity",
-    scrollStart: 0.5,
-    scrollEnd: 0.7,
-    horizontalPosition: "right",
-    verticalPosition: "center",
-  },
-  {
-    text: "Let's create something extraordinary",
-    subtext: "Scroll to explore my work",
-    scrollStart: 0.75,
-    scrollEnd: 0.95,
-    horizontalPosition: "center",
-    verticalPosition: "center",
-  },
-];
+export function Overlay({
+  scrollYProgress,
+}: {
+  scrollYProgress: MotionValue<number>;
+}) {
+  /* SECTION 1 — Hero */
+  const s1Opacity = useTransform(scrollYProgress, [0, 0.15, 0.25], [1, 1, 0]);
+  const s1Y = useTransform(scrollYProgress, [0, 0.25], [0, -60]);
 
-export function Overlay() {
-  const containerRef = useRef<HTMLDivElement>(null);
-  
-  const { scrollYProgress } = useScroll({
-    target: containerRef,
-    offset: ["start start", "end end"],
-  });
+  /* SECTION 2 — Left */
+  const s2Opacity = useTransform(
+    scrollYProgress,
+    [0.25, 0.35, 0.5],
+    [0, 1, 0]
+  );
+  const s2Y = useTransform(scrollYProgress, [0.25, 0.5], [60, -60]);
+
+  /* SECTION 3 — Right */
+  const s3Opacity = useTransform(
+    scrollYProgress,
+    [0.5, 0.65, 0.8],
+    [0, 1, 0]
+  );
+  const s3Y = useTransform(scrollYProgress, [0.5, 0.8], [60, -60]);
 
   return (
-    <div 
-      ref={containerRef}
-      className="absolute inset-0 z-10 pointer-events-none"
-      style={{ height: "500vh" }}
-    >
-      {/* Sticky overlay container */}
-      <div className="sticky top-0 h-screen w-full overflow-hidden">
-        {textSections.map((section, index) => (
-          <TextOverlay
-            key={index}
-            section={section}
-            scrollYProgress={scrollYProgress}
-            index={index}
-          />
-        ))}
-      </div>
-    </div>
+    <>
+      {/* SECTION 1 */}
+      <Section opacity={s1Opacity} y={s1Y} className="justify-center text-center">
+        <h1 className="text-6xl md:text-8xl font-bold tracking-tighter leading-tight">
+          Devansh Bagaria
+          <br />
+          <span className="text-white/50 text-3xl md:text-4xl font-medium">
+            Creative Developer
+          </span>
+        </h1>
+      </Section>
+
+      {/* SECTION 2 */}
+      <Section
+        opacity={s2Opacity}
+        y={s2Y}
+        className="justify-start pl-8 md:pl-20 text-left"
+      >
+        <h2 className="text-5xl md:text-7xl font-semibold leading-tight">
+          I build systems,
+          <br />
+          not just interfaces
+        </h2>
+      </Section>
+
+      {/* SECTION 3 */}
+      <Section
+        opacity={s3Opacity}
+        y={s3Y}
+        className="justify-end pr-8 md:pr-20 text-right"
+      >
+        <h2 className="text-5xl md:text-7xl font-semibold leading-tight">
+          Bridging design
+          <br />
+          and engineering
+        </h2>
+      </Section>
+    </>
   );
 }
 
-interface TextOverlayProps {
-  section: TextSection;
-  scrollYProgress: ReturnType<typeof useScroll>["scrollYProgress"];
-  index: number;
-}
-
-function TextOverlay({ section, scrollYProgress, index }: TextOverlayProps) {
-  // Fade in/out based on scroll position
-  const opacity = useTransform(
-    scrollYProgress,
-    [
-      section.scrollStart,
-      section.scrollStart + 0.05,
-      section.scrollEnd - 0.05,
-      section.scrollEnd,
-    ],
-    [0, 1, 1, 0]
-  );
-
-  // Parallax movement - alternate directions based on index
-  const yOffset = index % 2 === 0 ? -50 : 50;
-  const y = useTransform(
-    scrollYProgress,
-    [section.scrollStart, section.scrollEnd],
-    [yOffset, -yOffset]
-  );
-
-  const horizontalClasses = {
-    left: "items-center justify-start pl-8 md:pl-20",
-    center: "items-center justify-center text-center",
-    right: "items-center justify-end pr-8 md:pr-20",
-  };
-
-  const verticalClasses = {
-    top: "pt-20",
-    center: "",
-    bottom: "pb-20",
-  };
-
+function Section({ children, opacity, y, className = "" }: SectionProps) {
   return (
     <motion.div
-      className={`absolute inset-0 flex flex-col ${horizontalClasses[section.horizontalPosition || "center"]} ${verticalClasses[section.verticalPosition || "center"]} px-4`}
       style={{ opacity, y }}
+      aria-hidden="true"
+      className={`absolute inset-0 flex items-center pointer-events-none
+        [will-change:transform,opacity]
+        text-white ${className}`}
     >
-      <div className="max-w-4xl">
-        <h2 className="text-5xl md:text-7xl lg:text-8xl font-bold text-white leading-tight tracking-tight drop-shadow-lg">
-          {section.text}
-        </h2>
-        {section.subtext && (
-          <p className="mt-4 text-lg md:text-xl text-white/70 font-light tracking-wide">
-            {section.subtext}
-          </p>
-        )}
-      </div>
+      {children}
     </motion.div>
   );
 }

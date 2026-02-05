@@ -1,3 +1,7 @@
+"use client";
+
+import { useRef } from "react";
+import { useScroll } from "framer-motion";
 import { ScrollyCanvas } from "@/components/custom/ScrollyCanvas";
 import { Overlay } from "@/components/custom/Overlay";
 import Projects  from "@/components/Projects";
@@ -6,10 +10,17 @@ import ContactMe from "@/components/ContactMe";
 import AboutMe from "@/components/Aboutme";
 
 export default function Home() {
+  const containerRef = useRef<HTMLDivElement>(null);
+  
+  const { scrollYProgress } = useScroll({
+    target: containerRef,
+    offset: ["start start", "end end"],
+  });
+
   return (
     <main className="relative bg-[#121212]">
       {/* Scrollytelling Section */}
-      <section className="relative">
+      <section ref={containerRef} className="relative">
         {/* Canvas-based frame sequence */}
         <ScrollyCanvas 
           frameCount={147} 
@@ -18,9 +29,11 @@ export default function Home() {
         />
         
         {/* Overlay with parallax text */}
-        <Overlay />
+        <Overlay scrollYProgress={scrollYProgress} />
       </section>
       <AboutMe/>
+
+      <Skills/>
       {/* Projects Section */}
       <Projects />
 

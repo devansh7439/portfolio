@@ -108,7 +108,8 @@ export function ScrollyCanvas({
               objectFit: "cover",
               width: "100%",
               height: "100%",
-              display: imagesLoaded ? "block" : "none"
+              display: imagesLoaded ? "block" : "none",
+              imageRendering: "-webkit-optimize-contrast"
             }}
           />
 

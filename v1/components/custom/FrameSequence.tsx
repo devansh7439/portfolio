@@ -149,6 +149,7 @@ export function FrameSequence({
             className="object-cover"
             priority
             sizes="100vw"
+            quality={100}
             unoptimized
           />
         )}
