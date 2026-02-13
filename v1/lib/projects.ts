@@ -8,6 +8,7 @@ export interface Project {
   category: string;
   description: string;
   image?: string;
+  video?: string;
   tags?: string[];
   link?: string;
   github?: string;
@@ -42,6 +43,7 @@ export function getAllProjects(): Project[] {
         category: matterResult.data.category || 'Project',
         description: matterResult.data.description || '',
         image: matterResult.data.image || 'https://images.unsplash.com/photo-1558655146-9f40138edfeb?w=800&q=80',
+        video: matterResult.data.video || '',
         tags: matterResult.data.tags || [],
         link: matterResult.data.link || '',
         github: matterResult.data.github || '',

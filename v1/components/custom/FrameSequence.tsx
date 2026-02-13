@@ -19,24 +19,65 @@ interface FrameSequenceProps {
   framePath?: string;
 }
 
+function getInitialFrameFromScroll(frameCount: number): number {
+  // This runs immediately on mount, before React renders
+  if (typeof window === 'undefined') return 1;
+  
+  const scrollY = window.scrollY;
+  const viewportHeight = window.innerHeight;
+  
+  // The FrameSequence typically pins for 100vh after it enters viewport
+  // We need to estimate where in the sequence we are based on scroll
+  
+  // Get all potential trigger elements - look for our container or similar pinned sections
+  // Since we don't have the ref yet, we'll estimate based on typical layout
+  
+  // Estimate: the section is roughly 2x viewport height (pinned + scroll through)
+  // The animation happens over roughly 1 viewport height of scroll
+  
+  // If we're near the top of the page, we're likely at the start
+  if (scrollY < viewportHeight) return 1;
+  
+  // Estimate progress based on scroll position
+  // FrameSequence is typically early in the page (after hero)
+  // Let's assume it starts around viewport height and spans ~1.5 viewports
+  const estimatedStart = viewportHeight * 0.5;
+  const estimatedEnd = estimatedStart + (viewportHeight * 1.5);
+  
+  if (scrollY < estimatedStart) return 1;
+  if (scrollY > estimatedEnd) return frameCount;
+  
+  const progress = (scrollY - estimatedStart) / (estimatedEnd - estimatedStart);
+  const frameIndex = Math.min(
+    Math.floor(progress * frameCount),
+    frameCount - 1
+  );
+  
+  return frameIndex + 1;
+}
+
 export function FrameSequence({
   texts,
   frameCount = 147,
   framePath = "/sequence/webp",
 }: FrameSequenceProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [currentFrame, setCurrentFrame] = useState(1);
+  // Initialize with the correct frame based on current scroll position
+  const [currentFrame, setCurrentFrame] = useState(() => getInitialFrameFromScroll(frameCount));
   const [isLoaded, setIsLoaded] = useState(false);
+  const [canRender, setCanRender] = useState(false);
   const triggersRef = useRef<ScrollTrigger[]>([]);
 
-  // Preload initial frames
+  // Preload frames around the current scroll position
   useEffect(() => {
     const preloadFrames = async () => {
       const promises = [];
-      // Preload first 10 frames
-      for (let i = 1; i <= Math.min(10, frameCount); i++) {
+      // Preload frames around current position (±5 frames)
+      const startFrame = Math.max(1, currentFrame - 5);
+      const endFrame = Math.min(frameCount, currentFrame + 5);
+      
+      for (let i = startFrame; i <= endFrame; i++) {
         const img = new window.Image();
-        // FIXED: Updated file path pattern
         img.src = `${framePath}/frame-${i}.webp`;
         promises.push(
           new Promise((resolve) => {
@@ -45,12 +86,18 @@ export function FrameSequence({
           })
         );
       }
+      
       await Promise.all(promises);
       setIsLoaded(true);
+      
+      // Small delay to ensure everything is ready before rendering
+      requestAnimationFrame(() => {
+        setCanRender(true);
+      });
     };
     
     preloadFrames();
-  }, [framePath, frameCount]);
+  }, [framePath, frameCount, currentFrame]);
 
   // Refresh ScrollTrigger after images load
   useEffect(() => {
@@ -67,7 +114,7 @@ export function FrameSequence({
     triggersRef.current.forEach((trigger) => trigger.kill());
     triggersRef.current = [];
 
-    // Create scroll-triggered animation - pin for 100vh
+    // Create scroll-triggered animation
     const trigger = ScrollTrigger.create({
       trigger: container,
       start: "top top",
@@ -86,43 +133,58 @@ export function FrameSequence({
 
     triggersRef.current.push(trigger);
 
+    // Fine-tune the frame based on actual ScrollTrigger measurements
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        ScrollTrigger.refresh();
+        
+        const scrollY = window.scrollY;
+        const start = trigger.start;
+        const end = trigger.end;
+        
+        let progress = 0;
+        if (typeof start === 'number' && typeof end === 'number') {
+          const scrollRange = end - start;
+          const scrollProgress = scrollY - start;
+          progress = Math.max(0, Math.min(1, scrollProgress / scrollRange));
+        }
+        
+        const frameIndex = Math.min(
+          Math.floor(progress * frameCount),
+          frameCount - 1
+        );
+        setCurrentFrame(frameIndex + 1);
+      });
+    });
+
     return () => {
       triggersRef.current.forEach((trigger) => trigger.kill());
       triggersRef.current = [];
     };
   }, [frameCount, isLoaded]);
 
-  // FIXED: Use useCallback instead of useMemo returning a function
   const getTextOpacity = useCallback((textIndex: number): number => {
     if (textIndex === 0) {
-      // Text 1: 1-49, fade out 41-49
       if (currentFrame <= 40) return 1;
       if (currentFrame >= 49) return 0;
-      // Fade out: frames 41-49
       return 1 - ((currentFrame - 40) / 9);
     } else if (textIndex === 1) {
-      // Text 2: fade in 41-50, visible 51-90, fade out 91-100
       if (currentFrame < 41) return 0;
       if (currentFrame >= 41 && currentFrame <= 50) {
-        // Fade in: frames 41-50
         return (currentFrame - 41) / 9;
       }
       if (currentFrame <= 90) return 1;
       if (currentFrame >= 100) return 0;
-      // Fade out: frames 91-100
       return 1 - ((currentFrame - 90) / 10);
     } else {
-      // Text 3: fade in 91-100, visible 101-147
       if (currentFrame < 91) return 0;
       if (currentFrame >= 91 && currentFrame <= 100) {
-        // Fade in: frames 91-100
         return (currentFrame - 91) / 9;
       }
       return 1;
     }
   }, [currentFrame]);
 
-  // Position classes for text overlay
   const positionClasses = {
     center: "items-center justify-center text-center",
     "bottom-left": "items-end justify-start text-left pb-20 pl-20",
@@ -131,7 +193,6 @@ export function FrameSequence({
     "top-right": "items-start justify-end text-right pt-20 pr-20",
   };
 
-  // FIXED: Updated file path pattern
   const currentFrameUrl = `${framePath}/frame-${currentFrame}.webp`;
 
   return (
@@ -139,9 +200,8 @@ export function FrameSequence({
       ref={containerRef}
       className="relative w-full h-screen overflow-hidden"
     >
-      {/* Single frame - much more performant */}
       <div className="absolute inset-0 w-full h-full">
-        {isLoaded && (
+        {canRender && (
           <Image
             src={currentFrameUrl}
             alt={`Frame ${currentFrame}`}
@@ -155,14 +215,10 @@ export function FrameSequence({
         )}
       </div>
 
-      {/* Dark overlay for text readability */}
       <div className="absolute inset-0 bg-black/30 pointer-events-none" />
 
-      {/* Text overlays - each with its own position and opacity */}
       {texts.map((textOverlay, index) => {
         const opacity = getTextOpacity(index);
-        
-        // Only render if there's some opacity
         if (opacity <= 0) return null;
         
         return (
@@ -171,7 +227,6 @@ export function FrameSequence({
             className={`absolute inset-0 flex flex-col ${positionClasses[textOverlay.position]} z-10`}
             style={{ opacity }}
           >
-            {/* Main large text */}
             <h2 className="text-6xl md:text-8xl lg:text-9xl font-bold text-white leading-none tracking-tight">
               {textOverlay.text}
             </h2>

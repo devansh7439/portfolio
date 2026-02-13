@@ -2,6 +2,8 @@
 
 import { useEffect, useRef, useState } from "react";
 import { useScroll, useTransform } from "framer-motion";
+import { useTheme } from "../ThemeProvider";
+import Overlay from "./Overlay";
 
 interface ScrollyCanvasProps {
   frameCount?: number;
@@ -19,6 +21,8 @@ export function ScrollyCanvas({
   const [imagesLoaded, setImagesLoaded] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
   const preloadedImages = useRef<Map<number, HTMLImageElement>>(new Map());
+  const { theme } = useTheme();
+  const isDark = theme === 'dark';
 
   const { scrollYProgress } = useScroll({
     target: containerRef,
@@ -96,8 +100,9 @@ export function ScrollyCanvas({
       <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">
         {/* Image wrapper - full width and height */}
         <div
-          className="relative w-full h-full overflow-hidden"
-          style={{ backgroundColor: "#121212" }}
+          className={`relative w-full h-full overflow-hidden transition-colors duration-300 ${
+            isDark ? 'bg-[#121212]' : 'bg-[#fafafa]'
+          }`}
         >
           {/* Single img element - no key, no remounting */}
           <img
@@ -113,12 +118,21 @@ export function ScrollyCanvas({
             }}
           />
 
+          {/* Overlay text on top of images */}
+          <Overlay scrollYProgress={scrollYProgress} />
+
           {/* Loading indicator */}
           {!imagesLoaded && (
-            <div className="absolute inset-0 flex items-center justify-center bg-[#121212]">
+            <div className={`absolute inset-0 flex items-center justify-center transition-colors duration-300 ${
+              isDark ? 'bg-[#121212]' : 'bg-[#fafafa]'
+            }`}>
               <div className="text-center">
-                <div className="w-12 h-12 border-4 border-white/20 border-t-white rounded-full animate-spin mb-3 mx-auto" />
-                <p className="text-white/60 text-sm font-medium">
+                <div className={`w-12 h-12 border-4 rounded-full animate-spin mb-3 mx-auto ${
+                  isDark 
+                    ? 'border-white/20 border-t-white' 
+                    : 'border-black/20 border-t-black'
+                }`} />
+                <p className={`text-sm font-medium ${isDark ? 'text-white/60' : 'text-black/60'}`}>
                   Loading {loadingProgress}%
                 </p>
               </div>

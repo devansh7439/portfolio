@@ -8,7 +8,8 @@ import AboutMe from "@/components/Aboutme";
 export default function Home() {
   return (
     <SmoothScroll>
-      <main className="relative bg-[#121212]">
+      <main className="relative">
+
         {/* Scrollytelling Section */}
         <section className="relative">
           <ScrollyCanvas

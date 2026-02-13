@@ -30,21 +30,11 @@ export default function Overlay({ scrollYProgress }: { scrollYProgress: MotionVa
   );
 }
 
-import { ReactNode } from "react";
-
-interface SectionProps {
-  children: ReactNode;
-  opacity: MotionValue<number>;
-  y: MotionValue<number>;
-  className?: string;
-}
-
-function Section({ children, opacity, y, className = "" }: SectionProps) {
+function Section({ children, opacity, y, className = "" }: any) {
     return (
         <motion.div 
             style={{ opacity, y }}
-            aria-hidden="true"
-            className={`absolute inset-0 flex items-center pointer-events-none [will-change:transform,opacity] ${className} text-white`}
+            className={`absolute inset-0 flex items-center pointer-events-none ${className} text-white`}
         >
             {children}
         </motion.div>
