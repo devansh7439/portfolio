@@ -7,6 +7,7 @@ import ScrollRestoration from "@/components/ScrollRestoration";
 import PageWrapper from "@/components/PageWrapper";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import ThemeWrapper from "@/components/ThemeWrapper";
+import AppwritePing from "@/components/AppwritePing";
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
@@ -67,6 +68,7 @@ export default function RootLayout({
           }
         `}} />
         <ThemeProvider>
+          <AppwritePing />
           <ThemeWrapper>
             <PageWrapper>
               <ScrollRestoration />
