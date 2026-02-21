@@ -102,6 +102,22 @@ export default function Navbar() {
     setIsMobileMenuOpen(false);
   }, [lenis]);
 
+  // Body scroll lock + Lenis pause when mobile menu is open
+  useEffect(() => {
+    if (!isMobileMenuOpen) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    if (typeof window !== 'undefined' && (window as any).lenis) {
+      (window as any).lenis.stop();
+    }
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      if (typeof window !== 'undefined' && (window as any).lenis) {
+        (window as any).lenis.start();
+      }
+    };
+  }, [isMobileMenuOpen]);
+
   const handleLogoClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
     if (lenis) {
@@ -243,12 +259,22 @@ export default function Navbar() {
       {/* Mobile Navigation Overlay - Liquid Glass */}
       <AnimatePresence>
         {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -20, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -20, scale: 0.95 }}
-            transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className={`absolute top-20 left-4 right-4 rounded-2xl md:hidden overflow-hidden backdrop-blur-xl ${
+          <>
+            {/* Invisible backdrop to close menu when tapping outside */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              transition={{ duration: 0.2 }}
+              className="fixed inset-0 z-[90] md:hidden"
+              onClick={() => setIsMobileMenuOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -20, scale: 0.95 }}
+              transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
+              className={`absolute top-20 left-4 right-4 rounded-2xl md:hidden overflow-hidden backdrop-blur-xl z-[95] ${
               isDark 
                 ? 'bg-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/[0.1]' 
                 : 'bg-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-black/[0.15]'
@@ -288,6 +314,7 @@ export default function Navbar() {
               ))}
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </motion.nav>

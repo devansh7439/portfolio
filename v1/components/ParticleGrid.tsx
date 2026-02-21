@@ -5,7 +5,8 @@ import { useTheme } from './ThemeProvider';
 
 // ── Config ──────────────────────────────────────────────────
 // ── Config ──────────────────────────────────────────────────
-const GRID_SPACING = 40;          // px between particle origins (Increased for performance)
+const GRID_SPACING = 40;          // px between particle origins
+const GRID_SPACING_MOBILE = 60;   // wider spacing on mobile for better perf // px between particle origins (Increased for performance)
 const PARTICLE_RADIUS = 1.4;      // dot size
 const JITTER = 6;                 // max random offset from grid
 const REPULSE_RADIUS = 120;       // cursor influence radius
@@ -42,14 +43,15 @@ export default function ParticleGrid() {
 
   // Build grid of particles for given dimensions
   const buildGrid = useCallback((w: number, h: number) => {
-    const cols = Math.ceil(w / GRID_SPACING) + 2;
-    const rows = Math.ceil(h / GRID_SPACING) + 2;
+    const spacing = w < 768 ? GRID_SPACING_MOBILE : GRID_SPACING;
+    const cols = Math.ceil(w / spacing) + 2;
+    const rows = Math.ceil(h / spacing) + 2;
     const particles: Particle[] = [];
 
     for (let r = 0; r < rows; r++) {
       for (let c = 0; c < cols; c++) {
-        const ox = c * GRID_SPACING + (Math.random() - 0.5) * JITTER;
-        const oy = r * GRID_SPACING + (Math.random() - 0.5) * JITTER;
+        const ox = c * spacing + (Math.random() - 0.5) * JITTER;
+        const oy = r * spacing + (Math.random() - 0.5) * JITTER;
         particles.push({ ox, oy, x: ox, y: oy, vx: 0, vy: 0 });
       }
     }
@@ -93,6 +95,20 @@ export default function ParticleGrid() {
 
     window.addEventListener('mousemove', onMouseMove, { passive: true });
     document.addEventListener('mouseleave', onMouseLeave);
+
+    // Touch tracking (mobile)
+    const onTouchMove = (e: TouchEvent) => {
+      if (e.touches.length > 0) {
+        mouseRef.current.x = e.touches[0].clientX;
+        mouseRef.current.y = e.touches[0].clientY;
+      }
+    };
+    const onTouchEnd = () => {
+      mouseRef.current.x = -9999;
+      mouseRef.current.y = -9999;
+    };
+    window.addEventListener('touchmove', onTouchMove, { passive: true });
+    window.addEventListener('touchend', onTouchEnd, { passive: true });
 
     // ── Render loop ───────────────────────────────────────
     const tick = () => {
@@ -188,6 +204,8 @@ export default function ParticleGrid() {
       window.removeEventListener('resize', resize);
       window.removeEventListener('mousemove', onMouseMove);
       document.removeEventListener('mouseleave', onMouseLeave);
+      window.removeEventListener('touchmove', onTouchMove);
+      window.removeEventListener('touchend', onTouchEnd);
     };
   }, [buildGrid]);
 

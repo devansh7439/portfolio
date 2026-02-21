@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Gravitas_One, Inter, Poppins, Syne } from "next/font/google";
 import "./globals.css";
 import Navbar from "@/components/Navbar";
@@ -37,6 +37,12 @@ export const metadata: Metadata = {
     description: "Portfolio of Devansh Bagaria - Building digital experiences that bridge design and engineering.",
     type: "website",
   },
+};
+
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  viewportFit: 'cover',
 };
 
 export default function RootLayout({

@@ -3,7 +3,7 @@
 import { motion } from "framer-motion";
 import { Github, Linkedin, Mail, Phone } from "lucide-react";
 import { useTheme } from "./ThemeProvider";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 type ContactNode = {
   label: string;
@@ -202,6 +202,11 @@ export default function ContactMe() {
 
 function HolographicProjector({ isDark }: { isDark: boolean }) {
   const [isProjecting, setIsProjecting] = useState(false);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
 
   return (
     <motion.div
@@ -209,11 +214,11 @@ function HolographicProjector({ isDark }: { isDark: boolean }) {
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.7, delay: 0.3 }}
       viewport={{ once: true }}
-      onMouseEnter={() => setIsProjecting(true)}
-      onMouseLeave={() => setIsProjecting(false)}
+      onMouseEnter={() => { if (!isTouchDevice) setIsProjecting(true); }}
+      onMouseLeave={() => { if (!isTouchDevice) setIsProjecting(false); }}
       onFocusCapture={() => setIsProjecting(true)}
       onBlurCapture={() => setIsProjecting(false)}
-      className="relative mx-auto w-[min(760px,97vw)] h-[360px] select-none"
+      className="relative mx-auto w-[min(760px,97vw)] h-[320px] sm:h-[360px] select-none"
     >
       {/* Status indicator */}
       <motion.div
@@ -227,7 +232,7 @@ function HolographicProjector({ isDark }: { isDark: boolean }) {
         }}
         transition={{ duration: 1.1, repeat: isProjecting ? Infinity : 0 }}
       >
-        Projector {isProjecting ? "Online" : "Standby"}
+        {isTouchDevice ? (isProjecting ? "Tap base to hide" : "Tap base to reveal") : (isProjecting ? "Projector Online" : "Hover to activate")}
       </motion.div>
 
       {/* Floor reflection */}
@@ -366,7 +371,7 @@ function HolographicProjector({ isDark }: { isDark: boolean }) {
         aria-label="Toggle contact projector"
         aria-pressed={isProjecting}
         onClick={() => setIsProjecting((prev) => !prev)}
-        className="group/projector absolute bottom-0 left-1/2 h-[98px] w-[330px] md:w-[410px] -translate-x-1/2 rounded-[36px] focus:outline-none focus-visible:outline-none"
+        className="group/projector absolute bottom-0 left-1/2 h-[98px] w-[min(330px,90vw)] md:w-[410px] -translate-x-1/2 rounded-[36px] focus:outline-none focus-visible:outline-none"
       >
         <div
           className={`absolute inset-0 rounded-[36px] border backdrop-blur-xl ${

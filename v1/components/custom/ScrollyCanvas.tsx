@@ -5,6 +5,17 @@ import { useScroll, useSpring, useTransform } from "framer-motion";
 import { useTheme } from "../ThemeProvider";
 import Overlay from "./Overlay";
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener('resize', check, { passive: true });
+    return () => window.removeEventListener('resize', check);
+  }, []);
+  return isMobile;
+}
+
 interface ScrollyCanvasProps {
   frameCount?: number;
   framePath?: string;
@@ -16,6 +27,8 @@ export function ScrollyCanvas({
   framePath = "/sequence/webp",
   scrollHeight = "500vh",
 }: ScrollyCanvasProps) {
+  const isMobile = useIsMobile();
+  const effectiveScrollHeight = isMobile ? '300vh' : scrollHeight;
   const containerRef = useRef<HTMLDivElement>(null);
   const imgRef = useRef<HTMLImageElement>(null);
   const [imagesLoaded, setImagesLoaded] = useState(false);
@@ -89,7 +102,7 @@ export function ScrollyCanvas({
       setImagesLoaded(false);
       setLoadingProgress(0);
 
-      const batchSize = 20;
+      const batchSize = isMobile ? 10 : 20;
       const totalBatches = Math.ceil(frameCount / batchSize);
 
       for (let batch = 0; batch < totalBatches; batch++) {
@@ -176,7 +189,7 @@ export function ScrollyCanvas({
     <div
       ref={containerRef}
       className="relative w-full"
-      style={{ height: scrollHeight }}
+      style={{ height: effectiveScrollHeight }}
     >
       {/* Sticky container with full-width image */}
       <div className="sticky top-0 h-screen w-full flex items-center justify-center overflow-hidden">

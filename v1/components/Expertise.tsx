@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { useTheme } from "./ThemeProvider";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const expertiseCategories = [
   {
@@ -102,6 +102,10 @@ export default function Expertise() {
 
 function ExpertiseCard({ category, index, isDark }: { category: { category: string; items: string[] }; index: number; isDark: boolean }) {
   const [ripples, setRipples] = useState<{ id: number; x: number; y: number }[]>([]);
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
   const accentRgb = "168,85,247";
   const accentOverlay = isDark
     ? "linear-gradient(145deg, rgba(168,85,247,0.10) 0%, rgba(196,181,253,0.06) 45%, rgba(255,255,255,0.02) 100%)"
@@ -123,7 +127,8 @@ function ExpertiseCard({ category, index, isDark }: { category: { category: stri
       whileInView={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, delay: index * 0.15 }}
       viewport={{ once: true }}
-      whileHover={{ y: -8 }}
+      whileHover={isTouchDevice ? undefined : { y: -8 }}
+      whileTap={{ scale: 0.98 }}
       className="group relative h-full"
     >
       {/* Glow effect on hover */}
@@ -214,8 +219,8 @@ function ExpertiseCard({ category, index, isDark }: { category: { category: stri
               whileInView={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.3, delay: index * 0.1 + expertiseIndex * 0.05 }}
               viewport={{ once: true }}
-              whileHover={{ scale: 1.1, y: -2 }}
-              className={`h-[3.25rem] w-full px-3 py-2 flex items-center justify-center rounded-xl text-sm font-medium transition-all duration-300 border cursor-default backdrop-blur-sm card-chip-pulse ${
+              whileHover={isTouchDevice ? undefined : { scale: 1.1, y: -2 }}
+              className={`h-[3.25rem] w-full px-3 py-2 flex items-center justify-center rounded-xl text-xs sm:text-sm font-medium transition-all duration-300 border cursor-default backdrop-blur-sm card-chip-pulse ${
                 isDark 
                   ? 'bg-violet-400/[0.10] hover:bg-violet-400/[0.14] text-white/80 hover:text-violet-100 border-violet-300/[0.16] hover:border-violet-300/[0.26]' 
                   : 'bg-violet-500/[0.08] hover:bg-violet-500/[0.12] text-violet-900/90 hover:text-violet-900 border-violet-700/[0.12] hover:border-violet-700/[0.2]'

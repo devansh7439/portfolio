@@ -123,31 +123,6 @@ export default function Projects({ projects }: ProjectsProps) {
     };
   }, [checkScrollability, updateActiveSlide, refreshSlidesCache]);
 
-  useEffect(() => {
-    const container = scrollContainerRef.current;
-    if (!container) return;
-
-    const handleWheel = (event: WheelEvent) => {
-      if (event.ctrlKey) return;
-      if (Math.abs(event.deltaY) <= Math.abs(event.deltaX)) return;
-
-      const { scrollLeft, scrollWidth, clientWidth } = container;
-      const atStart = scrollLeft <= 1;
-      const atEnd = scrollLeft >= scrollWidth - clientWidth - 1;
-      if ((event.deltaY < 0 && atStart) || (event.deltaY > 0 && atEnd)) {
-        return;
-      }
-
-      event.preventDefault();
-      container.scrollBy({ left: event.deltaY });
-    };
-
-    container.addEventListener('wheel', handleWheel, { passive: false });
-    return () => {
-      container.removeEventListener('wheel', handleWheel);
-    };
-  }, []);
-
   const scrollLeft = useCallback(() => {
     scrollToSlide(activeSlide - 1);
   }, [activeSlide, scrollToSlide]);
@@ -292,7 +267,7 @@ export default function Projects({ projects }: ProjectsProps) {
         {/* Horizontal Scroll Container */}
         <div 
           ref={scrollContainerRef}
-          className="flex gap-6 px-5 md:px-10 overflow-x-auto overflow-y-hidden pb-8 snap-x snap-mandatory scroll-smooth touch-pan-x"
+          className="flex gap-6 px-5 md:px-10 overflow-x-auto overflow-y-hidden pb-8 snap-x snap-proximity scroll-smooth"
           style={{ 
             overscrollBehaviorX: 'contain',
             WebkitOverflowScrolling: 'touch',
@@ -308,7 +283,7 @@ export default function Projects({ projects }: ProjectsProps) {
               data-slide-index={index}
               onClick={() => openProject(project)}
               className="group/card relative flex-shrink-0 w-[85vw] md:w-[500px] h-[300px] md:h-[350px] rounded-2xl overflow-hidden snap-center transition-all duration-500 hover:scale-[1.02] cursor-pointer transform-gpu will-change-transform"
-              style={{ scrollSnapAlign: 'center', contentVisibility: 'auto' }}
+              style={{ scrollSnapAlign: 'center' }}
             >
               {/* Liquid Glass Card Background */}
               <div className={`absolute inset-0 backdrop-blur-md md:backdrop-blur-xl rounded-2xl transition-all duration-500 ${
@@ -352,25 +327,12 @@ export default function Projects({ projects }: ProjectsProps) {
                   {project.category}
                 </span>
                 <h3 className={`w-full text-center font-medium text-2xl md:text-3xl tracking-tight leading-tight min-h-[2.75rem] md:min-h-[3.25rem] ${isDark ? 'text-white' : 'text-gray-900'}`}>
-                  <span
-                    className="block overflow-hidden"
-                    style={{
-                      display: "-webkit-box",
-                      WebkitLineClamp: 2,
-                      WebkitBoxOrient: "vertical",
-                    }}
-                  >
+                  <span className="block overflow-hidden max-h-[3.4rem]">
                     {project.title}
                   </span>
                 </h3>
                 <p
-                  className={`text-sm leading-relaxed text-center min-h-[2.75rem] opacity-0 group-hover/card:opacity-100 transition-opacity duration-500 ${isDark ? 'text-white/60' : 'text-gray-800'}`}
-                  style={{
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2,
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                  }}
+                  className={`text-sm leading-relaxed text-center min-h-[2.75rem] max-h-[2.9rem] overflow-hidden opacity-100 ${isDark ? 'text-white/80' : 'text-gray-900'}`}
                 >
                   {project.description}
                 </p>
@@ -407,7 +369,7 @@ export default function Projects({ projects }: ProjectsProps) {
             transition={{ duration: 0.5, delay: 0 }}
             viewport={{ once: true }}
             className="group/card relative flex-shrink-0 w-[85vw] md:w-[500px] h-[300px] md:h-[350px] rounded-2xl overflow-hidden snap-center transition-all duration-500 transform-gpu will-change-transform"
-            style={{ scrollSnapAlign: 'center', contentVisibility: 'auto' }}
+            style={{ scrollSnapAlign: 'center' }}
           >
             {/* Liquid Glass Card Background */}
             <div className={`absolute inset-0 backdrop-blur-md md:backdrop-blur-xl rounded-2xl transition-all duration-500 ${
@@ -497,6 +459,22 @@ export default function Projects({ projects }: ProjectsProps) {
           <div className="flex-shrink-0 w-5 md:w-20" />
         </div>
 
+        {/* Slide indicator dots (mobile) */}
+        <div className="flex md:hidden items-center justify-center gap-1.5 mt-4 px-4">
+          {Array.from({ length: totalSlides }).map((_, i) => (
+            <button
+              key={i}
+              onClick={() => scrollToSlide(i)}
+              aria-label={`Go to slide ${i + 1}`}
+              className={`rounded-full transition-all duration-300 ${
+                activeSlide === i
+                  ? `w-6 h-2 ${isDark ? 'bg-white/80' : 'bg-black/70'}`
+                  : `w-2 h-2 ${isDark ? 'bg-white/25' : 'bg-black/20'}`
+              }`}
+            />
+          ))}
+        </div>
+
       </div>
 
       {/* Project Modal */}
@@ -531,7 +509,7 @@ export default function Projects({ projects }: ProjectsProps) {
               }}
               onClick={(event) => event.stopPropagation()}
               style={{ willChange: 'transform, opacity' }}
-              className={`relative w-full max-w-6xl max-h-[90vh] overflow-hidden rounded-3xl shadow-2xl flex flex-col md:flex-row transform-gpu ${
+              className={`relative w-full max-w-6xl max-h-[95dvh] md:max-h-[90vh] min-h-0 overflow-hidden rounded-3xl shadow-2xl flex flex-col md:flex-row transform-gpu ${
                 isDark ? 'bg-[#0a0a0a] border border-white/10' : 'bg-white border border-black/10'
               }`}
             >
@@ -550,7 +528,7 @@ export default function Projects({ projects }: ProjectsProps) {
               </button>
 
               {/* Media Section (Left/Top) */}
-              <div className="w-full md:w-3/5 h-[40vh] md:h-auto relative bg-black flex items-center justify-center overflow-hidden">
+              <div className="w-full md:w-3/5 flex-shrink-0 h-[28vh] sm:h-[32vh] md:h-auto relative bg-black flex items-center justify-center overflow-hidden">
                 {selectedProject.video ? (
                   <div className="relative w-full h-full">
                     <iframe
@@ -576,48 +554,55 @@ export default function Projects({ projects }: ProjectsProps) {
               </div>
 
               {/* Details Section (Right/Bottom) */}
-              <div className={`w-full md:w-2/5 p-8 md:p-12 flex flex-col overflow-y-auto overscroll-contain ${
+              <div className={`flex-1 min-h-0 w-full md:w-2/5 p-5 sm:p-8 md:p-12 flex flex-col overflow-y-auto overscroll-contain ${
                 isDark ? 'text-white' : 'text-gray-900'
               }`}>
                 <motion.div
                   initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: shouldReduceMotion ? 0 : 0.08, duration: shouldReduceMotion ? 0 : 0.2 }}
+                  className="flex min-h-0 h-full flex-col"
                 >
-                  <span className={`text-xs font-bold tracking-widest uppercase mb-3 block ${
-                    isDark ? 'text-violet-400' : 'text-violet-600'
-                  }`}>
-                    {selectedProject.category}
-                  </span>
+                  <div
+                    className="flex flex-col"
+                  >
+                    <span className={`text-xs font-bold tracking-widest uppercase mb-3 block ${
+                      isDark ? 'text-violet-400' : 'text-violet-600'
+                    }`}>
+                      {selectedProject.category}
+                    </span>
 
-                  <h2 className="text-3xl md:text-4xl font-bold mb-6 leading-tight">
-                    {selectedProject.title}
-                  </h2>
+                    <h2 className="text-2xl md:text-4xl font-bold mb-4 md:mb-6 leading-tight">
+                      {selectedProject.title}
+                    </h2>
 
-                  <div className="flex flex-wrap gap-2 mb-8">
-                    {selectedProject.tags?.map((tag) => (
-                      <span
-                        key={tag}
-                        className={`text-xs px-3 py-1.5 rounded-full font-medium ${
-                          isDark
-                            ? 'bg-white/10 text-white/80 border border-white/10'
-                            : 'bg-black/5 text-gray-700 border border-black/5'
-                        }`}
-                      >
-                        {tag}
-                      </span>
-                    ))}
+                    <div className="flex flex-wrap gap-1.5 mb-4 md:mb-8">
+                      {selectedProject.tags?.map((tag) => (
+                        <span
+                          key={tag}
+                          className={`text-xs px-3 py-1.5 rounded-full font-medium ${
+                            isDark
+                              ? 'bg-white/10 text-white/80 border border-white/10'
+                              : 'bg-black/5 text-gray-700 border border-black/5'
+                          }`}
+                        >
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+
+                    <p className={`text-sm sm:text-base md:text-lg leading-relaxed ${
+                      isDark ? 'text-white/70' : 'text-gray-600'
+                    }`}>
+                      {selectedProject.description}
+                    </p>
                   </div>
 
-                  <p className={`text-lg leading-relaxed mb-10 ${
-                    isDark ? 'text-white/70' : 'text-gray-600'
-                  }`}>
-                    {selectedProject.description}
-                  </p>
-
-                  <div className="flex flex-col gap-4 mt-auto">
-                    {/* GitHub Button */}
-                    {selectedProject.github && (
+                  {/* GitHub Button */}
+                  {selectedProject.github && (
+                    <div className={`mt-4 pt-4 border-t shrink-0 ${
+                      isDark ? 'border-white/10' : 'border-black/10'
+                    }`}>
                       <a
                         href={selectedProject.github}
                         target="_blank"
@@ -631,8 +616,8 @@ export default function Projects({ projects }: ProjectsProps) {
                         <Github size={20} />
                         <span>Source Code</span>
                       </a>
-                    )}
-                  </div>
+                    </div>
+                  )}
                 </motion.div>
               </div>
             </motion.div>

@@ -2,11 +2,17 @@
 
 import { motion, useMotionValue, useSpring, useTransform } from "framer-motion";
 import { useTheme } from "./ThemeProvider";
-import { useRef } from "react";
+import { useRef, useState, useEffect } from "react";
 
 export default function AboutMe() {
   const { theme } = useTheme();
   const isDark = theme === 'dark';
+  
+  // Detect touch device to disable 3D tilt
+  const [isTouchDevice, setIsTouchDevice] = useState(false);
+  useEffect(() => {
+    setIsTouchDevice('ontouchstart' in window || navigator.maxTouchPoints > 0);
+  }, []);
   
   // 3D Card Tilt Effect
   const cardRef = useRef<HTMLDivElement>(null);
@@ -18,7 +24,7 @@ export default function AboutMe() {
   const rotateY = useSpring(useTransform(mouseX, [-0.5, 0.5], [-8, 8]), springConfig);
   
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (isTouchDevice || !cardRef.current) return;
     const rect = cardRef.current.getBoundingClientRect();
     const x = (e.clientX - rect.left) / rect.width - 0.5;
     const y = (e.clientY - rect.top) / rect.height - 0.5;
@@ -116,7 +122,7 @@ export default function AboutMe() {
               
               {/* Staggered text paragraphs */}
               <div
-                className={`relative text-lg md:text-xl leading-relaxed max-w-2xl mx-auto font-semibold tracking-tight ${isDark ? 'text-white/70' : 'text-gray-700'}`}
+                className={`relative text-base md:text-xl leading-relaxed max-w-2xl mx-auto font-semibold tracking-tight ${isDark ? 'text-white/70' : 'text-gray-700'}`}
                 style={{ transform: 'translateZ(30px)', fontFamily: "var(--font-poppins)" }}
               >
                 <motion.p 

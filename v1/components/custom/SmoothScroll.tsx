@@ -29,7 +29,7 @@ export function SmoothScroll({
       gestureOrientation: "vertical",
       smoothWheel: true,
       wheelMultiplier: 1.2,
-      touchMultiplier: 2,
+      touchMultiplier: 2.5,
       infinite: false,
     });
 
