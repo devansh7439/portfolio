@@ -230,15 +230,6 @@ export default function LoadingScreen({ onLoadingComplete }: LoadingScreenProps)
             transition={{ delay: 0.8 }}
           />
 
-          {/* Version number */}
-          <motion.p
-            className="absolute bottom-8 left-1/2 -translate-x-1/2 text-[10px] tracking-[0.2em] text-white/20"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.5 }}
-          >
-            2025
-          </motion.p>
         </motion.div>
       )}
     </AnimatePresence>

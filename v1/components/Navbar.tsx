@@ -37,6 +37,7 @@ function RollingText({ children, className }: { children: string; className?: st
 
 export default function Navbar() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [pendingNavHref, setPendingNavHref] = useState<string | null>(null);
   const [lenis, setLenis] = useState<Lenis | null>(null);
   const [activeSection, setActiveSection] = useState<string>("");
   const [scrolled, setScrolled] = useState(false);
@@ -86,37 +87,59 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
-    e.preventDefault();
+  const scrollToHref = useCallback((href: string) => {
     const target = document.querySelector(href);
-    
-    if (target && lenis) {
+    if (!target) return;
+
+    if (lenis) {
       lenis.scrollTo(target as HTMLElement, {
         offset: -100,
         duration: 1.5,
       });
-    } else if (target) {
-      target.scrollIntoView({ behavior: 'smooth' });
+      return;
     }
-    
-    setIsMobileMenuOpen(false);
+
+    target.scrollIntoView({ behavior: 'smooth' });
   }, [lenis]);
+
+  const handleNavClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+    e.preventDefault();
+
+    if (isMobileMenuOpen) {
+      setPendingNavHref(href);
+      setIsMobileMenuOpen(false);
+      return;
+    }
+
+    scrollToHref(href);
+  }, [isMobileMenuOpen, scrollToHref]);
 
   // Body scroll lock + Lenis pause when mobile menu is open
   useEffect(() => {
     if (!isMobileMenuOpen) return;
     const prevOverflow = document.body.style.overflow;
     document.body.style.overflow = 'hidden';
-    if (typeof window !== 'undefined' && (window as any).lenis) {
-      (window as any).lenis.stop();
+    if (typeof window !== 'undefined') {
+      window.lenis?.stop();
     }
     return () => {
       document.body.style.overflow = prevOverflow;
-      if (typeof window !== 'undefined' && (window as any).lenis) {
-        (window as any).lenis.start();
+      if (typeof window !== 'undefined') {
+        window.lenis?.start();
       }
     };
   }, [isMobileMenuOpen]);
+
+  useEffect(() => {
+    if (!pendingNavHref || isMobileMenuOpen) return;
+
+    const rafId = window.requestAnimationFrame(() => {
+      scrollToHref(pendingNavHref);
+      setPendingNavHref(null);
+    });
+
+    return () => window.cancelAnimationFrame(rafId);
+  }, [pendingNavHref, isMobileMenuOpen, scrollToHref]);
 
   const handleLogoClick = useCallback((e: React.MouseEvent<HTMLAnchorElement>) => {
     e.preventDefault();
@@ -133,7 +156,7 @@ export default function Navbar() {
       animate={{ y: 0, opacity: 1 }}
       transition={{ duration: 0.8, delay: 0.2, ease: [0.25, 0.46, 0.45, 0.94] }}
       style={{ fontFamily: "var(--font-poppins)" }}
-      className="fixed top-0 left-0 right-0 z-[100] bg-transparent"
+      className="fixed top-0 left-0 right-0 z-[120] bg-transparent"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative">
         <div className="relative flex items-center justify-center h-20 md:h-24">
@@ -223,7 +246,7 @@ export default function Navbar() {
 
             {/* Mobile Menu Button with morphing animation */}
             <motion.button
-              className={`md:hidden z-50 p-2 ${isDark ? 'text-white/90' : 'text-black font-bold'}`}
+              className={`md:hidden z-[130] p-2 ${isDark ? 'text-white/90' : 'text-black font-bold'}`}
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
               whileHover={{ scale: 1.1 }}
               whileTap={{ scale: 0.9 }}
@@ -266,7 +289,7 @@ export default function Navbar() {
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
               transition={{ duration: 0.2 }}
-              className="fixed inset-0 z-[90] md:hidden"
+              className="fixed inset-0 z-[125] md:hidden"
               onClick={() => setIsMobileMenuOpen(false)}
             />
             <motion.div
@@ -274,7 +297,7 @@ export default function Navbar() {
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.95 }}
               transition={{ duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }}
-              className={`absolute top-20 left-4 right-4 rounded-2xl md:hidden overflow-hidden backdrop-blur-xl z-[95] ${
+              className={`absolute top-20 left-4 right-4 rounded-2xl md:hidden overflow-hidden backdrop-blur-xl z-[128] ${
               isDark 
                 ? 'bg-white/[0.05] shadow-[0_20px_50px_rgba(0,0,0,0.5)] border border-white/[0.1]' 
                 : 'bg-white/60 shadow-[0_20px_50px_rgba(0,0,0,0.2)] border border-black/[0.15]'
