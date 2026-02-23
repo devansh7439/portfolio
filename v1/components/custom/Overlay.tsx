@@ -7,7 +7,7 @@ export default function Overlay({ scrollYProgress }: { scrollYProgress: MotionVa
   const headingStyle = { fontFamily: "var(--font-syne)" };
   const headlineClass = "font-bold max-w-[92vw] sm:max-w-[600px] leading-[0.94] tracking-tight text-[clamp(1.95rem,9vw,2.8rem)] sm:text-5xl md:text-7xl";
   const nameClass = "text-slate-300 text-[2.1rem] sm:text-[3.675rem] md:text-[5.88rem] lg:text-[7.84rem] font-bold tracking-tight sm:tracking-tighter leading-[0.9]";
-  const mobileTextShell = "rounded-2xl bg-black/35 px-4 py-3 backdrop-blur-md sm:rounded-none sm:bg-transparent sm:px-0 sm:py-0 sm:backdrop-blur-none";
+  const mobileTextShell = "";
   
   return (
      <>
